@@ -1,19 +1,23 @@
-import { recoverPublicKey, fromHex } from 'viem'
-import type { Hex, Address } from 'viem'
-import { SignatureNormalizationError, RecoveryIdCalculationError } from '../errors'
-import { publicKeyToAddress } from './address'
+import type { Address, Hex } from 'viem';
+import { fromHex, recoverPublicKey } from 'viem';
+import {
+	RecoveryIdCalculationError,
+	SignatureNormalizationError,
+} from '../errors';
+import { publicKeyToAddress } from './address';
 
 /**
  * secp256k1 curve order (n)
  * Maximum value for ECDSA signature components r and s
  */
-export const SECP256K1_N = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141n
+export const SECP256K1_N =
+	0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n;
 
 /**
  * Half of secp256k1 curve order
  * Used for EIP-2 signature normalization
  */
-export const SECP256K1_N_HALF = SECP256K1_N / 2n
+export const SECP256K1_N_HALF = SECP256K1_N / 2n;
 
 /**
  * Normalizes the s value of an ECDSA signature according to EIP-2.
@@ -34,17 +38,17 @@ export const SECP256K1_N_HALF = SECP256K1_N / 2n
  * ```
  */
 export function normalizeS(s: bigint): bigint {
-  if (s <= 0n || s >= SECP256K1_N) {
-    throw new SignatureNormalizationError(
-      `s value out of valid range (must be 0 < s < n): ${s.toString(16)}`
-    )
-  }
+	if (s <= 0n || s >= SECP256K1_N) {
+		throw new SignatureNormalizationError(
+			`s value out of valid range (must be 0 < s < n): ${s.toString(16)}`,
+		);
+	}
 
-  if (s > SECP256K1_N_HALF) {
-    return SECP256K1_N - s
-  }
+	if (s > SECP256K1_N_HALF) {
+		return SECP256K1_N - s;
+	}
 
-  return s
+	return s;
 }
 
 /**
@@ -73,42 +77,39 @@ export function normalizeS(s: bigint): bigint {
  * ```
  */
 export async function calculateRecoveryId(
-  messageHash: Hex,
-  r: Hex,
-  s: Hex,
-  expectedAddress: Address
+	messageHash: Hex,
+	r: Hex,
+	s: Hex,
+	expectedAddress: Address,
 ): Promise<number> {
-  for (let recoveryId = 0; recoveryId < 4; recoveryId++) {
-    try {
-      // Attempt to recover public key using this recovery ID
-      // Use legacy v value (27 + recoveryId) for recovery
-      const publicKey = await recoverPublicKey({
-        hash: messageHash,
-        signature: {
-          r,
-          s,
-          v: BigInt(27 + recoveryId)
-        }
-      })
+	for (let recoveryId = 0; recoveryId < 4; recoveryId++) {
+		try {
+			// Attempt to recover public key using this recovery ID
+			// Use legacy v value (27 + recoveryId) for recovery
+			const publicKey = await recoverPublicKey({
+				hash: messageHash,
+				signature: {
+					r,
+					s,
+					v: BigInt(27 + recoveryId),
+				},
+			});
 
-      // Calculate address from recovered public key
-      // recoverPublicKey returns Hex, convert to Uint8Array for publicKeyToAddress
-      const publicKeyBytes = fromHex(publicKey, 'bytes')
-      const address = publicKeyToAddress(publicKeyBytes)
+			// Calculate address from recovered public key
+			// recoverPublicKey returns Hex, convert to Uint8Array for publicKeyToAddress
+			const publicKeyBytes = fromHex(publicKey, 'bytes');
+			const address = publicKeyToAddress(publicKeyBytes);
 
-      // Compare with expected address (case-insensitive)
-      if (address.toLowerCase() === expectedAddress.toLowerCase()) {
-        return recoveryId
-      }
-    } catch {
-      // Recovery failed with this ID, try next one
-      continue
-    }
-  }
+			// Compare with expected address (case-insensitive)
+			if (address.toLowerCase() === expectedAddress.toLowerCase()) {
+				return recoveryId;
+			}
+		} catch {}
+	}
 
-  throw new RecoveryIdCalculationError(
-    `Cannot find valid recovery ID for signature (r=${r}, s=${s}) and address ${expectedAddress}`
-  )
+	throw new RecoveryIdCalculationError(
+		`Cannot find valid recovery ID for signature (r=${r}, s=${s}) and address ${expectedAddress}`,
+	);
 }
 
 /**
@@ -132,19 +133,19 @@ export async function calculateRecoveryId(
  * ```
  */
 export function calculateV(recoveryId: number, chainId?: number): bigint {
-  if (recoveryId < 0 || recoveryId > 3) {
-    throw new RecoveryIdCalculationError(
-      `Invalid recovery ID (must be 0-3): ${recoveryId}`
-    )
-  }
+	if (recoveryId < 0 || recoveryId > 3) {
+		throw new RecoveryIdCalculationError(
+			`Invalid recovery ID (must be 0-3): ${recoveryId}`,
+		);
+	}
 
-  if (chainId !== undefined) {
-    // EIP-155: v = chainId * 2 + 35 + recoveryId
-    return BigInt(chainId * 2 + 35 + recoveryId)
-  }
+	if (chainId !== undefined) {
+		// EIP-155: v = chainId * 2 + 35 + recoveryId
+		return BigInt(chainId * 2 + 35 + recoveryId);
+	}
 
-  // Legacy: v = 27 + recoveryId
-  return BigInt(27 + recoveryId)
+	// Legacy: v = 27 + recoveryId
+	return BigInt(27 + recoveryId);
 }
 
 /**
@@ -164,15 +165,15 @@ export function calculateV(recoveryId: number, chainId?: number): bigint {
  * ```
  */
 export function uint8ArrayToBigInt(arr: Uint8Array): bigint {
-  if (arr.length === 0) {
-    return 0n
-  }
+	if (arr.length === 0) {
+		return 0n;
+	}
 
-  // Convert Uint8Array to hex string
-  const hex = Array.from(arr)
-    .map(byte => byte.toString(16).padStart(2, '0'))
-    .join('')
+	// Convert Uint8Array to hex string
+	const hex = Array.from(arr)
+		.map((byte) => byte.toString(16).padStart(2, '0'))
+		.join('');
 
-  // Parse as bigint
-  return BigInt('0x' + hex)
+	// Parse as bigint
+	return BigInt(`0x${hex}`);
 }

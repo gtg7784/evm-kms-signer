@@ -1,6 +1,6 @@
-import { toAccount } from 'viem/accounts'
-import type { LocalAccount } from 'viem'
-import { KmsSigner } from './kms/signer'
+import type { LocalAccount } from 'viem';
+import { toAccount } from 'viem/accounts';
+import type { KmsSigner } from './kms/signer';
 
 /**
  * Create a viem Account from KmsSigner.
@@ -24,16 +24,18 @@ import { KmsSigner } from './kms/signer'
  * ```
  */
 export async function toKmsAccount(signer: KmsSigner): Promise<LocalAccount> {
-  const address = await signer.getAddress()
+	const address = await signer.getAddress();
 
-  return toAccount({
-    address,
-    signMessage: async ({ message }) => {
-      // Convert SignableMessage to string for KmsSigner
-      const messageStr = typeof message === 'string' ? message : message.raw.toString()
-      return signer.signMessage({ message: messageStr })
-    },
-    signTransaction: async (transaction, options) => signer.signTransaction(transaction, options),
-    signTypedData: async (typedData) => signer.signTypedData(typedData)
-  })
+	return toAccount({
+		address,
+		signMessage: async ({ message }) => {
+			// Convert SignableMessage to string for KmsSigner
+			const messageStr =
+				typeof message === 'string' ? message : message.raw.toString();
+			return signer.signMessage({ message: messageStr });
+		},
+		signTransaction: async (transaction, options) =>
+			signer.signTransaction(transaction, options),
+		signTypedData: async (typedData) => signer.signTypedData(typedData),
+	});
 }

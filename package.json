@@ -1,76 +1,76 @@
 {
-  "name": "evm-kms-signer",
-  "version": "1.0.0",
-  "type": "module",
-  "description": "AWS KMS-based Ethereum signer for viem with enterprise-grade security. Sign transactions and messages using keys stored in AWS KMS without exposing private keys.",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
-    }
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "keywords": [
-    "ethereum",
-    "aws",
-    "kms",
-    "viem",
-    "signer",
-    "evm",
-    "crypto",
-    "blockchain",
-    "wallet",
-    "security"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/gtg7784/evm-kms-signer.git"
-  },
-  "bugs": {
-    "url": "https://github.com/gtg7784/evm-kms-signer/issues"
-  },
-  "homepage": "https://github.com/gtg7784/evm-kms-signer#readme",
-  "scripts": {
-    "type-check": "tsc --noEmit",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
-    "start": "tsx src/index.ts",
-    "build": "tsc",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "example:sign": "tsx examples/sign-message.ts",
-    "example:tx": "tsx examples/send-transaction.ts"
-  },
-  "author": "Alan Go <tae.gun7784@gmail.com>",
-  "license": "MIT",
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "packageManager": "pnpm@9.0.1+sha1.0e0a9c2d140ddf9aab730067eb7bcfb9e18bdee7",
-  "peerDependencies": {
-    "viem": "^2.0.0"
-  },
-  "dependencies": {
-    "@aws-sdk/client-kms": "^3.0.0",
-    "abitype": "^1.1.1"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.3.4",
-    "@types/node": "^24.10.0",
-    "@vitest/coverage-v8": "4.0.8",
-    "dotenv": "^17.2.3",
-    "tsx": "^4.20.6",
-    "typescript": "^5.9.3",
-    "viem": "^2.0.0",
-    "vitest": "^4.0.8"
-  }
+	"name": "evm-kms-signer",
+	"version": "1.0.0",
+	"type": "module",
+	"description": "AWS KMS-based Ethereum signer for viem with enterprise-grade security. Sign transactions and messages using keys stored in AWS KMS without exposing private keys.",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"keywords": [
+		"ethereum",
+		"aws",
+		"kms",
+		"viem",
+		"signer",
+		"evm",
+		"crypto",
+		"blockchain",
+		"wallet",
+		"security"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/gtg7784/evm-kms-signer.git"
+	},
+	"bugs": {
+		"url": "https://github.com/gtg7784/evm-kms-signer/issues"
+	},
+	"homepage": "https://github.com/gtg7784/evm-kms-signer#readme",
+	"scripts": {
+		"type-check": "tsc --noEmit",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"start": "tsx src/index.ts",
+		"build": "tsc",
+		"test": "vitest",
+		"test:ui": "vitest --ui",
+		"test:run": "vitest run",
+		"test:coverage": "vitest run --coverage",
+		"example:sign": "tsx examples/sign-message.ts",
+		"example:tx": "tsx examples/send-transaction.ts"
+	},
+	"author": "Alan Go <tae.gun7784@gmail.com>",
+	"license": "MIT",
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"packageManager": "pnpm@9.0.1+sha1.0e0a9c2d140ddf9aab730067eb7bcfb9e18bdee7",
+	"peerDependencies": {
+		"viem": "^2.0.0"
+	},
+	"dependencies": {
+		"@aws-sdk/client-kms": "^3.0.0",
+		"abitype": "^1.1.1"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.3.4",
+		"@types/node": "^24.10.0",
+		"@vitest/coverage-v8": "4.0.8",
+		"dotenv": "^17.2.3",
+		"tsx": "^4.20.6",
+		"typescript": "^5.9.3",
+		"viem": "^2.0.0",
+		"vitest": "^4.0.8"
+	}
 }
