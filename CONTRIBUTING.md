@@ -94,6 +94,47 @@ git rebase upstream/main
 
 ## Coding Standards
 
+### Linting and Formatting
+
+We use **Biome** for linting and formatting. All code must pass lint checks before being merged.
+
+#### Running Lint Checks
+
+  ```bash
+# Check for lint issues
+pnpm lint
+
+# Auto-fix lint issues
+pnpm lint:fix
+  ```
+
+#### Lint Rules
+
+- **No `any` types**: Use proper TypeScript types instead of `any`
+- **No non-null assertions**: Use type assertions or proper type guards instead of `!`
+- **Template literals**: Use template literals instead of string concatenation
+- **Consistent formatting**: Biome automatically formats code on save
+
+#### Pre-commit Checklist
+
+Before committing, ensure:
+
+  ```bash
+# 1. Lint check passes
+pnpm lint
+
+# 2. Tests pass
+pnpm test:run
+
+# 3. Type check passes
+pnpm type-check
+
+# 4. Build succeeds
+pnpm build
+  ```
+
+**Note**: CI will automatically run these checks on every push and PR.
+
 ### TypeScript Guidelines
 
 - **Type Safety**: Always use explicit types, avoid `any`
@@ -236,8 +277,16 @@ git rebase upstream/main
 2. **Run all checks**:
 
   ```bash
+# Lint check
+pnpm lint
+
+# Run tests
 pnpm test:run
+
+# Type check
 pnpm type-check
+
+# Build
 pnpm build
   ```
 
@@ -313,8 +362,8 @@ git push origin feat/your-feature-name
 ### PR Review Process
 
 - All PRs require at least one approval
-- CI must pass (tests, type checking, build)
-- Code must follow project conventions
+- CI must pass (lint check, tests, type checking, build)
+- Code must follow project conventions and pass all lint rules
 - Documentation must be updated if needed
 
 ### Addressing Review Comments
