@@ -1,7 +1,7 @@
 {
   "name": "kms-signer-evm",
   "version": "1.0.0",
-  "description": "",
+  "description": "AWS KMS-based Ethereum signer for viem with enterprise-grade security. Sign transactions and messages using keys stored in AWS KMS without exposing private keys.",
   "main": "index.ts",
   "scripts": {
     "type-check": "tsc --noEmit",
