@@ -18,8 +18,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22' # Node 22 includes npm v10.8+ with provenance support
+          node-version: '22'
           registry-url: 'https://registry.npmjs.org'
+
+      - name: Upgrade npm for OIDC Trusted Publishing
+        run: npm install -g npm@latest
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -60,7 +63,5 @@ jobs:
         env:
           GITHUB_REF: ${{ github.ref }}
 
-      - name: Publish to npm (using npm for OIDC Trusted Publishing)
+      - name: Publish to npm
         run: npm publish --provenance --access public
-        # Uses OIDC authentication via id-token: write permission
-        # No NODE_AUTH_TOKEN needed - secure short-lived tokens only
