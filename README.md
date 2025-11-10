@@ -1,4 +1,4 @@
-# kms-signer-evm
+# evm-kms-signer
 
 A TypeScript library that integrates AWS KMS (Key Management Service) with [viem](https://viem.sh) to create secure Ethereum signers. This allows you to sign Ethereum transactions and messages using keys stored in AWS KMS, providing enterprise-grade security for your Ethereum operations.
 
@@ -15,19 +15,19 @@ A TypeScript library that integrates AWS KMS (Key Management Service) with [viem
 ## Installation
 
 ```bash
-pnpm add kms-signer-evm
+pnpm add evm-kms-signer
 ```
 
 Or with npm:
 
 ```bash
-npm install kms-signer-evm
+npm install evm-kms-signer
 ```
 
 Or with yarn:
 
 ```bash
-yarn add kms-signer-evm
+yarn add evm-kms-signer
 ```
 
 ## Prerequisites
@@ -69,7 +69,7 @@ AWS_SECRET_ACCESS_KEY=your_secret_key
 
 ```typescript
 import 'dotenv/config'
-import { KmsSigner, toKmsAccount } from 'kms-signer-evm'
+import { KmsSigner, toKmsAccount } from 'evm-kms-signer'
 
 async function main() {
   // Initialize the KMS signer
@@ -99,7 +99,7 @@ main().catch(console.error)
 import 'dotenv/config'
 import { createWalletClient, http } from 'viem'
 import { sepolia } from 'viem/chains'
-import { KmsSigner, toKmsAccount } from 'kms-signer-evm'
+import { KmsSigner, toKmsAccount } from 'evm-kms-signer'
 
 async function main() {
   // Initialize the KMS signer
