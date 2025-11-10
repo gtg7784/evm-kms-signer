@@ -296,4 +296,45 @@ describe('parseDerSignature', () => {
     expect(result.r[0]).toBe(0x11)
     expect(result.s[0]).toBe(0x22)
   })
+
+  test('should throw DerParsingError when buffer too short for r parsing', () => {
+    // #given
+    // SEQUENCE tag exists but buffer too short
+    const invalidDer = new Uint8Array([
+      0x30, 0x10, // SEQUENCE
+      // No INTEGER tag for r (buffer too short)
+    ])
+
+    // #when & #then
+    expect(() => parseDerSignature(invalidDer)).toThrow(DerParsingError)
+    expect(() => parseDerSignature(invalidDer)).toThrow('buffer too short')
+  })
+
+  test('should throw DerParsingError when buffer too short for r length', () => {
+    // #given
+    // Has INTEGER tag but missing length byte
+    const invalidDer = new Uint8Array([
+      0x30, 0x10, // SEQUENCE
+      0x02        // INTEGER tag but no length
+    ])
+
+    // #when & #then
+    expect(() => parseDerSignature(invalidDer)).toThrow(DerParsingError)
+    expect(() => parseDerSignature(invalidDer)).toThrow('buffer too short')
+  })
+
+  test('should throw DerParsingError when SEQUENCE length exceeds buffer (missing s)', () => {
+    // #given
+    // Has r but s INTEGER tag is missing - SEQUENCE length validation catches this
+    const invalidDer = new Uint8Array([
+      0x30, 0x44, // SEQUENCE says 68 bytes
+      0x02, 0x20, // r INTEGER
+      ...Array(32).fill(0x11)
+      // Missing s INTEGER tag - buffer only 36 bytes but SEQUENCE says 68
+    ])
+
+    // #when & #then
+    expect(() => parseDerSignature(invalidDer)).toThrow(DerParsingError)
+    expect(() => parseDerSignature(invalidDer)).toThrow('SEQUENCE length exceeds buffer')
+  })
 })

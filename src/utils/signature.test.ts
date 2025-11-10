@@ -1,6 +1,7 @@
 import { describe, test, expect } from 'vitest'
-import { normalizeS, calculateV, uint8ArrayToBigInt, SECP256K1_N, SECP256K1_N_HALF } from './signature'
+import { normalizeS, calculateV, calculateRecoveryId, uint8ArrayToBigInt, SECP256K1_N, SECP256K1_N_HALF } from './signature'
 import { SignatureNormalizationError, RecoveryIdCalculationError } from '../errors'
+import type { Address, Hex } from 'viem'
 
 describe('normalizeS', () => {
   test('should normalize s when s > n/2', () => {
@@ -377,5 +378,23 @@ describe('calculateV - additional failure cases', () => {
     // #then
     // v = 11155111 * 2 + 35 + 3 = 22310260
     expect(v).toBe(22310260n)
+  })
+})
+
+describe('calculateRecoveryId', () => {
+  test('should throw RecoveryIdCalculationError when no valid recovery ID found', async () => {
+    // #given
+    const messageHash = '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef' as Hex
+    const r = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' as Hex
+    const s = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' as Hex
+    const expectedAddress = '0x0000000000000000000000000000000000000000' as Address
+
+    // #when & #then
+    await expect(
+      calculateRecoveryId(messageHash, r, s, expectedAddress)
+    ).rejects.toThrow(RecoveryIdCalculationError)
+    await expect(
+      calculateRecoveryId(messageHash, r, s, expectedAddress)
+    ).rejects.toThrow('Cannot find valid recovery ID')
   })
 })

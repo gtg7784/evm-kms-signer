@@ -670,5 +670,26 @@ describe('KmsSigner', () => {
       expect(signature).toMatch(/^0x[0-9a-fA-F]+$/)
       expect(signature).toHaveLength(132)
     })
+
+    test('should propagate KMS client errors', async () => {
+      // #given
+      const kmError = new Error('Network timeout')
+      vi.mocked(KmsClient).mockImplementation(function(this: any) {
+        this.getPublicKey = vi.fn().mockResolvedValue(new Uint8Array([
+          0x04, // Uncompressed point indicator
+          ...Array(64).fill(0x11)
+        ]))
+        this.sign = vi.fn().mockRejectedValue(kmError)
+        return this
+      } as any)
+
+      const signer = new KmsSigner({
+        region: 'us-east-1',
+        keyId: 'test-key-id'
+      })
+
+      // #when & #then
+      await expect(signer.signMessage({ message: 'test' })).rejects.toThrow('Network timeout')
+    })
   })
 })
