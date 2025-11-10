@@ -44,6 +44,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "example:sign": "tsx examples/sign-message.ts",
     "example:tx": "tsx examples/send-transaction.ts"
   },
@@ -62,10 +63,11 @@
   },
   "devDependencies": {
     "@types/node": "^24.10.0",
+    "@vitest/coverage-v8": "4.0.8",
     "dotenv": "^17.2.3",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.8",
-    "viem": "^2.0.0"
+    "viem": "^2.0.0",
+    "vitest": "^4.0.8"
   }
 }
