@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-kms": "^3.0.0",
+    "abitype": "^1.1.1",
     "dotenv": "^17.2.3",
     "viem": "^2.0.0"
   }

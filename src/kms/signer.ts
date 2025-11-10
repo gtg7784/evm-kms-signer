@@ -1,5 +1,6 @@
-import type { Address, Hex } from 'viem'
-import { fromHex, toHex, hashMessage, concat } from 'viem'
+import type { Address, Hex, TransactionSerializable, SerializeTransactionFn, TypedDataDefinition } from 'viem'
+import type { TypedData } from 'abitype'
+import { fromHex, toHex, hashMessage, concat, keccak256, serializeTransaction, hashTypedData } from 'viem'
 import { KmsClient } from './client'
 import { extractPublicKeyFromDer, publicKeyToAddress } from '../utils/address'
 import { parseDerSignature } from '../utils/der'
@@ -180,6 +181,138 @@ export class KmsSigner {
     )
 
     // Calculate v value (Legacy, no chain)
+    const v = 27 + recoveryId
+
+    // Serialize signature
+    return concat([
+      toHex(r, { size: 32 }),
+      toHex(s, { size: 32 }),
+      toHex(v, { size: 1 })
+    ]) as Hex
+  }
+
+  /**
+   * Signs an Ethereum transaction.
+   *
+   * This method:
+   * 1. Serializes the transaction without signature fields (r, s, v)
+   * 2. Hashes the serialized transaction with keccak256
+   * 3. Signs the hash with KMS
+   * 4. Calculates the recovery ID
+   * 5. Computes the v value (EIP-155 if chainId present, legacy otherwise)
+   * 6. Returns the fully serialized transaction with signature
+   *
+   * @param transaction - The transaction to sign
+   * @param options - Optional serializer function (defaults to viem's serializeTransaction)
+   * @returns The serialized signed transaction as a hex string
+   * @throws {KmsClientError} If KMS API call fails
+   * @throws {DerParsingError} If signature format is invalid
+   * @throws {RecoveryIdCalculationError} If recovery ID calculation fails
+   *
+   * @example
+   * ```typescript
+   * const signer = new KmsSigner({ region: 'us-east-1', keyId: 'arn:...' })
+   * const signedTx = await signer.signTransaction({
+   *   to: '0x...',
+   *   value: parseEther('1'),
+   *   chainId: 1
+   * })
+   * ```
+   */
+  async signTransaction(
+    transaction: TransactionSerializable,
+    { serializer = serializeTransaction }: { serializer?: SerializeTransactionFn } = {}
+  ): Promise<Hex> {
+    // Serialize transaction for signing (without r, s, v)
+    const serializedTx = serializeTransaction({ ...transaction, r: undefined, s: undefined, v: undefined })
+    const hash = keccak256(serializedTx)
+
+    // Sign with KMS
+    const { r, s } = await this.signHash(hash)
+
+    // Calculate recovery ID
+    const address = await this.getAddress()
+    const recoveryId = await calculateRecoveryId(
+      hash,
+      toHex(r, { size: 32 }),
+      toHex(s, { size: 32 }),
+      address
+    )
+
+    // Calculate v value
+    const chainId = transaction.chainId
+    const v = chainId
+      ? BigInt(chainId * 2 + 35 + recoveryId)  // EIP-155
+      : BigInt(27 + recoveryId)                 // Legacy
+
+    // Final serialization with signature
+    return serializer({
+      ...transaction,
+      r: toHex(r, { size: 32 }),
+      s: toHex(s, { size: 32 }),
+      v
+    })
+  }
+
+  /**
+   * Signs typed data according to EIP-712.
+   *
+   * This method:
+   * 1. Hashes the typed data using EIP-712 (domain separator + type hash)
+   * 2. Signs the hash with KMS
+   * 3. Calculates the recovery ID
+   * 4. Returns the signature in the standard format: r (32 bytes) + s (32 bytes) + v (1 byte)
+   *
+   * @param typedData - The EIP-712 typed data to sign
+   * @returns The signature as a hex string (0x-prefixed, 130 characters)
+   * @throws {KmsClientError} If KMS API call fails
+   * @throws {DerParsingError} If signature format is invalid
+   * @throws {RecoveryIdCalculationError} If recovery ID calculation fails
+   *
+   * @example
+   * ```typescript
+   * const signer = new KmsSigner({ region: 'us-east-1', keyId: 'arn:...' })
+   * const signature = await signer.signTypedData({
+   *   domain: {
+   *     name: 'MyApp',
+   *     version: '1',
+   *     chainId: 1,
+   *     verifyingContract: '0x...'
+   *   },
+   *   types: {
+   *     Person: [
+   *       { name: 'name', type: 'string' },
+   *       { name: 'wallet', type: 'address' }
+   *     ]
+   *   },
+   *   primaryType: 'Person',
+   *   message: {
+   *     name: 'Alice',
+   *     wallet: '0x...'
+   *   }
+   * })
+   * ```
+   */
+  async signTypedData<
+    const TTypedData extends TypedData | Record<string, unknown>,
+    TPrimaryType extends keyof TTypedData | 'EIP712Domain' = keyof TTypedData
+  >(typedData: TypedDataDefinition<TTypedData, TPrimaryType>): Promise<Hex> {
+    // EIP-712 hashing (viem handles domain separator and type hash)
+    const hash = hashTypedData(typedData)
+
+    // Sign with KMS
+    const { r, s } = await this.signHash(hash)
+
+    // Calculate recovery ID
+    const address = await this.getAddress()
+    const recoveryId = await calculateRecoveryId(
+      hash,
+      toHex(r, { size: 32 }),
+      toHex(s, { size: 32 }),
+      address
+    )
+
+    // Calculate v value (Legacy, no chain for typed data)
     const v = 27 + recoveryId
 
     // Serialize signature
