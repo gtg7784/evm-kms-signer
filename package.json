@@ -5,7 +5,13 @@
   "main": "index.ts",
   "scripts": {
     "type-check": "tsc --noEmit",
-    "start": "tsx src/index.ts"
+    "start": "tsx src/index.ts",
+    "build": "tsc",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "example:sign": "tsx examples/sign-message.ts",
+    "example:tx": "tsx examples/send-transaction.ts"
   },
   "keywords": [],
   "author": "",
@@ -14,6 +20,12 @@
   "devDependencies": {
     "@types/node": "^24.10.0",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.8"
+  },
+  "dependencies": {
+    "@aws-sdk/client-kms": "^3.0.0",
+    "dotenv": "^17.2.3",
+    "viem": "^2.0.0"
   }
 }
