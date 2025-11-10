@@ -1,5 +1,5 @@
 {
-  "name": "kms-signer-evm",
+  "name": "evm-kms-signer",
   "version": "1.0.0",
   "description": "AWS KMS-based Ethereum signer for viem with enterprise-grade security. Sign transactions and messages using keys stored in AWS KMS without exposing private keys.",
   "main": "./dist/index.js",
@@ -30,12 +30,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/kms-signer-evm.git"
+    "url": "git+https://github.com/gtg7784/evm-kms-signer.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/kms-signer-evm/issues"
+    "url": "https://github.com/gtg7784/evm-kms-signer/issues"
   },
-  "homepage": "https://github.com/yourusername/kms-signer-evm#readme",
+  "homepage": "https://github.com/gtg7784/evm-kms-signer#readme",
   "scripts": {
     "type-check": "tsc --noEmit",
     "start": "tsx src/index.ts",
