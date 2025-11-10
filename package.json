@@ -2,11 +2,18 @@
   "name": "kms-signer-evm",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "type-check": "tsc --noEmit",
+    "start": "tsx src/index.ts"
   },
   "keywords": [],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "packageManager": "pnpm@9.0.1+sha1.0e0a9c2d140ddf9aab730067eb7bcfb9e18bdee7",
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
 }
