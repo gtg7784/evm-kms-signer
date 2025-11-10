@@ -1,6 +1,9 @@
-import type { Address } from 'viem'
+import type { Address, Hex } from 'viem'
+import { fromHex, toHex, hashMessage, concat } from 'viem'
 import { KmsClient } from './client'
 import { extractPublicKeyFromDer, publicKeyToAddress } from '../utils/address'
+import { parseDerSignature } from '../utils/der'
+import { normalizeS, calculateRecoveryId, uint8ArrayToBigInt } from '../utils/signature'
 import type { KmsConfig } from '../types'
 
 /**
@@ -99,5 +102,91 @@ export class KmsSigner {
     const address = publicKeyToAddress(publicKey)
     this.cachedAddress = address
     return address
+  }
+
+  /**
+   * Signs a hash using the KMS private key (internal helper method).
+   *
+   * This method is used internally by signMessage, signTransaction, and signTypedData.
+   * It converts the hash to bytes, signs with KMS, parses the DER signature,
+   * and normalizes the s value according to EIP-2.
+   *
+   * @param hash - The hash to sign (32 bytes, hex-encoded)
+   * @returns Object containing r and s as bigints
+   * @throws {KmsClientError} If KMS API call fails
+   * @throws {DerParsingError} If signature format is invalid
+   * @throws {SignatureNormalizationError} If s value is out of valid range
+   *
+   * @remarks
+   * The s value is automatically normalized to the lower half of the curve order (EIP-2)
+   * to prevent signature malleability attacks.
+   */
+  private async signHash(hash: Hex): Promise<{ r: bigint; s: bigint }> {
+    // Convert Hex to Uint8Array
+    const hashBytes = fromHex(hash, 'bytes')
+
+    // Sign with KMS
+    const derSignature = await this.kmsClient.sign(hashBytes)
+
+    // Parse DER signature
+    const { r: rBytes, s: sBytes } = parseDerSignature(derSignature)
+
+    // Convert to bigint
+    let r = uint8ArrayToBigInt(rBytes)
+    let s = uint8ArrayToBigInt(sBytes)
+
+    // EIP-2 normalization
+    s = normalizeS(s)
+
+    return { r, s }
+  }
+
+  /**
+   * Signs a message using EIP-191 personal_sign standard.
+   *
+   * This method:
+   * 1. Hashes the message with EIP-191 prefix: "\x19Ethereum Signed Message:\n" + len(message) + message
+   * 2. Signs the hash with KMS
+   * 3. Calculates the recovery ID to enable public key recovery
+   * 4. Returns the signature in the standard format: r (32 bytes) + s (32 bytes) + v (1 byte)
+   *
+   * @param params - Object containing the message string
+   * @returns The signature as a hex string (0x-prefixed, 130 characters)
+   * @throws {KmsClientError} If KMS API call fails
+   * @throws {DerParsingError} If signature format is invalid
+   * @throws {RecoveryIdCalculationError} If recovery ID calculation fails
+   *
+   * @example
+   * ```typescript
+   * const signer = new KmsSigner({ region: 'us-east-1', keyId: 'arn:...' })
+   * const signature = await signer.signMessage({ message: 'Hello, world!' })
+   * // signature: '0x...' (130 characters: 0x + 64 hex chars for r + 64 for s + 2 for v)
+   * ```
+   */
+  async signMessage({ message }: { message: string }): Promise<Hex> {
+    // EIP-191 hashing (viem handles automatically)
+    const messageHash = hashMessage(message)
+
+    // Sign with KMS
+    const { r, s } = await this.signHash(messageHash)
+
+    // Calculate recovery ID
+    const address = await this.getAddress()
+    const recoveryId = await calculateRecoveryId(
+      messageHash,
+      toHex(r, { size: 32 }),
+      toHex(s, { size: 32 }),
+      address
+    )
+
+    // Calculate v value (Legacy, no chain)
+    const v = 27 + recoveryId
+
+    // Serialize signature
+    return concat([
+      toHex(r, { size: 32 }),
+      toHex(s, { size: 32 }),
+      toHex(v, { size: 1 })
+    ]) as Hex
   }
 }
