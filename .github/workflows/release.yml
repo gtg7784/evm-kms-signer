@@ -51,6 +51,17 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Update package version
+        run: |
+          # Extract version from GitHub Release tag (e.g., v1.0.0 -> 1.0.0)
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "Publishing version: $VERSION"
+
+          # Update package.json version
+          npm version $VERSION --no-git-tag-version --allow-same-version
+        env:
+          GITHUB_REF: ${{ github.ref }}
+
       - name: Publish to npm
         run: pnpm publish --provenance --access public --no-git-checks
         env:
