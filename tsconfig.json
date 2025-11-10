@@ -13,6 +13,9 @@
 
 		// Emit
 		"outDir": "./dist",
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
 
 		// Interop Constraints
 		"esModuleInterop": true,
@@ -24,6 +27,6 @@
 		"strict": true,
 		"skipLibCheck": true
 	},
-	"include": ["src/**/*", "examples/**/*"],
-	"exclude": ["node_modules", "dist"]
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "dist", "**/*.test.ts", "examples"]
 }

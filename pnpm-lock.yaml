@@ -14,22 +14,22 @@ importers:
       abitype:
         specifier: ^1.1.1
         version: 1.1.1(typescript@5.9.3)
-      dotenv:
-        specifier: ^17.2.3
-        version: 17.2.3
-      viem:
-        specifier: ^2.0.0
-        version: 2.38.6(typescript@5.9.3)
     devDependencies:
       '@types/node':
         specifier: ^24.10.0
         version: 24.10.0
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
       tsx:
         specifier: ^4.20.6
         version: 4.20.6
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+      viem:
+        specifier: ^2.0.0
+        version: 2.38.6(typescript@5.9.3)
       vitest:
         specifier: ^4.0.8
         version: 4.0.8(@types/node@24.10.0)(tsx@4.20.6)
