@@ -156,4 +156,144 @@ describe('parseDerSignature', () => {
     expect(() => parseDerSignature(invalidDer)).toThrow('expected INTEGER tag')
     expect(() => parseDerSignature(invalidDer)).toThrow('for s')
   })
+
+  test('should throw DerParsingError when DER signature is empty', () => {
+    // #given
+    const emptyDer = new Uint8Array([])
+
+    // #when & #then
+    expect(() => parseDerSignature(emptyDer)).toThrow(DerParsingError)
+  })
+
+  test('should throw DerParsingError when DER signature is too short', () => {
+    // #given
+    // Only SEQUENCE tag and length, missing data
+    const shortDer = new Uint8Array([0x30, 0x44])
+
+    // #when & #then
+    expect(() => parseDerSignature(shortDer)).toThrow(DerParsingError)
+  })
+
+  test('should throw DerParsingError when r length is invalid (0)', () => {
+    // #given
+    // r length is 0
+    const invalidDer = new Uint8Array([
+      0x30, 0x24, // SEQUENCE
+      0x02, 0x00, // INTEGER with length 0 (invalid)
+      0x02, 0x20, // s INTEGER
+      ...Array(32).fill(0x22)
+    ])
+
+    // #when & #then
+    expect(() => parseDerSignature(invalidDer)).toThrow(DerParsingError)
+  })
+
+  test('should throw DerParsingError when s length is invalid (0)', () => {
+    // #given
+    // s length is 0
+    const invalidDer = new Uint8Array([
+      0x30, 0x24, // SEQUENCE
+      0x02, 0x20, // r INTEGER
+      ...Array(32).fill(0x11),
+      0x02, 0x00  // INTEGER with length 0 (invalid)
+    ])
+
+    // #when & #then
+    expect(() => parseDerSignature(invalidDer)).toThrow(DerParsingError)
+  })
+
+  test('should throw DerParsingError when r value exceeds buffer length', () => {
+    // #given
+    // r length says 32 bytes but only 10 bytes available
+    const invalidDer = new Uint8Array([
+      0x30, 0x44, // SEQUENCE
+      0x02, 0x20, // INTEGER, claims length 32
+      ...Array(10).fill(0x11) // but only 10 bytes provided
+    ])
+
+    // #when & #then
+    expect(() => parseDerSignature(invalidDer)).toThrow(DerParsingError)
+  })
+
+  test('should throw DerParsingError when s value exceeds buffer length', () => {
+    // #given
+    // s length says 32 bytes but buffer ends early
+    const invalidDer = new Uint8Array([
+      0x30, 0x44, // SEQUENCE
+      0x02, 0x20, // r INTEGER, length 32
+      ...Array(32).fill(0x11),
+      0x02, 0x20, // s INTEGER, claims length 32
+      ...Array(10).fill(0x22) // but only 10 bytes provided
+    ])
+
+    // #when & #then
+    expect(() => parseDerSignature(invalidDer)).toThrow(DerParsingError)
+  })
+
+  test('should throw DerParsingError when r has excessive length (>33 bytes)', () => {
+    // #given
+    // r is 34 bytes (too long even with padding)
+    const invalidDer = new Uint8Array([
+      0x30, 0x46, // SEQUENCE
+      0x02, 0x22, // INTEGER, length 34
+      ...Array(34).fill(0x11),
+      0x02, 0x20, // s INTEGER
+      ...Array(32).fill(0x22)
+    ])
+
+    // #when & #then
+    expect(() => parseDerSignature(invalidDer)).toThrow(DerParsingError)
+  })
+
+  test('should throw DerParsingError when s has excessive length (>33 bytes)', () => {
+    // #given
+    // s is 35 bytes (too long)
+    const invalidDer = new Uint8Array([
+      0x30, 0x47, // SEQUENCE
+      0x02, 0x20, // r INTEGER
+      ...Array(32).fill(0x11),
+      0x02, 0x23, // INTEGER, length 35
+      ...Array(35).fill(0x22)
+    ])
+
+    // #when & #then
+    expect(() => parseDerSignature(invalidDer)).toThrow(DerParsingError)
+  })
+
+  test('should throw DerParsingError when SEQUENCE length is incorrect', () => {
+    // #given
+    // SEQUENCE length says 68 but actual data is shorter
+    const invalidDer = new Uint8Array([
+      0x30, 0x44, // SEQUENCE claims length 68
+      0x02, 0x10, // r INTEGER, length 16 (actual)
+      ...Array(16).fill(0x11),
+      0x02, 0x10, // s INTEGER, length 16 (actual)
+      ...Array(16).fill(0x22)
+    ])
+
+    // #when & #then
+    expect(() => parseDerSignature(invalidDer)).toThrow(DerParsingError)
+  })
+
+  test('should throw DerParsingError when both r and s have leading 0x00 padding', () => {
+    // #given
+    // Both r and s are 33 bytes with 0x00 padding
+    const derWithBothPadded = new Uint8Array([
+      0x30, 0x46, // SEQUENCE, length 70
+      0x02, 0x21, // r INTEGER, length 33
+      0x00, ...Array(32).fill(0x11),
+      0x02, 0x21, // s INTEGER, length 33
+      0x00, ...Array(32).fill(0x22)
+    ])
+
+    // #when
+    const result = parseDerSignature(derWithBothPadded)
+
+    // #then
+    // Should successfully remove both leading 0x00 bytes
+    expect(result.r).toHaveLength(32)
+    expect(result.s).toHaveLength(32)
+    expect(result.r[0]).toBe(0x11)
+    expect(result.s[0]).toBe(0x22)
+  })
 })
