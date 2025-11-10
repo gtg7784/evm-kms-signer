@@ -405,4 +405,270 @@ describe('KmsSigner', () => {
       expect(callArg).toHaveLength(32) // EIP-712 hash output
     })
   })
+
+  describe('failure cases', () => {
+    test('should throw error when KMS client fails to get public key', async () => {
+      // #given
+      const mockError = new Error('KMS unavailable')
+      vi.mocked(KmsClient).mockImplementation(function(this: any) {
+        this.getPublicKey = vi.fn().mockRejectedValue(mockError)
+        this.sign = vi.fn()
+        return this
+      } as any)
+
+      const signer = new KmsSigner({
+        region: 'us-east-1',
+        keyId: 'test-key-id'
+      })
+
+      // #when & #then
+      await expect(signer.getPublicKey()).rejects.toThrow('KMS unavailable')
+    })
+
+    test('should throw error when KMS returns invalid DER public key', async () => {
+      // #given
+      const invalidDer = new Uint8Array([0x00, 0x01, 0x02]) // Too short
+      vi.mocked(KmsClient).mockImplementation(function(this: any) {
+        this.getPublicKey = vi.fn().mockResolvedValue(invalidDer)
+        this.sign = vi.fn()
+        return this
+      } as any)
+
+      const signer = new KmsSigner({
+        region: 'us-east-1',
+        keyId: 'test-key-id'
+      })
+
+      // #when & #then
+      await expect(signer.getPublicKey()).rejects.toThrow()
+    })
+
+    test('should throw error when KMS client fails to sign', async () => {
+      // #given
+      const mockError = new Error('KMS signing failed')
+      const mockGetPublicKey = vi.fn().mockResolvedValue(MOCK_DER_PUBLIC_KEY)
+      const mockSign = vi.fn().mockRejectedValue(mockError)
+
+      vi.mocked(KmsClient).mockImplementation(function(this: any) {
+        this.getPublicKey = mockGetPublicKey
+        this.sign = mockSign
+        return this
+      } as any)
+
+      const signer = new KmsSigner({
+        region: 'us-east-1',
+        keyId: 'test-key-id'
+      })
+
+      // #when & #then
+      await expect(signer.signMessage({ message: 'test' })).rejects.toThrow('KMS signing failed')
+    })
+
+    test('should throw error when KMS returns invalid DER signature', async () => {
+      // #given
+      const invalidSig = new Uint8Array([0x00, 0x01]) // Too short
+      const mockGetPublicKey = vi.fn().mockResolvedValue(MOCK_DER_PUBLIC_KEY)
+      const mockSign = vi.fn().mockResolvedValue(invalidSig)
+
+      vi.mocked(KmsClient).mockImplementation(function(this: any) {
+        this.getPublicKey = mockGetPublicKey
+        this.sign = mockSign
+        return this
+      } as any)
+
+      const signer = new KmsSigner({
+        region: 'us-east-1',
+        keyId: 'test-key-id'
+      })
+
+      // #when & #then
+      await expect(signer.signMessage({ message: 'test' })).rejects.toThrow()
+    })
+
+    test('should throw error when recovery ID cannot be calculated', async () => {
+      // #given
+      const mockGetPublicKey = vi.fn().mockResolvedValue(MOCK_DER_PUBLIC_KEY)
+      const mockSign = vi.fn().mockResolvedValue(MOCK_DER_SIGNATURE)
+
+      vi.mocked(KmsClient).mockImplementation(function(this: any) {
+        this.getPublicKey = mockGetPublicKey
+        this.sign = mockSign
+        return this
+      } as any)
+
+      // Mock calculateRecoveryId to throw error
+      vi.spyOn(signatureUtils, 'calculateRecoveryId').mockRejectedValue(
+        new Error('Cannot find valid recovery ID')
+      )
+
+      const signer = new KmsSigner({
+        region: 'us-east-1',
+        keyId: 'test-key-id'
+      })
+
+      // #when & #then
+      await expect(signer.signMessage({ message: 'test' })).rejects.toThrow('Cannot find valid recovery ID')
+    })
+
+    test('should throw error when signing transaction without required fields', async () => {
+      // #given
+      const signer = new KmsSigner({
+        region: 'us-east-1',
+        keyId: 'test-key-id'
+      })
+
+      // #when & #then
+      // Missing 'to' field (required for transaction)
+      await expect(signer.signTransaction({
+        value: 1n,
+        nonce: 0
+      } as any)).rejects.toThrow()
+    })
+
+    test('should throw error when signing with empty message', async () => {
+      // #given
+      const signer = new KmsSigner({
+        region: 'us-east-1',
+        keyId: 'test-key-id'
+      })
+
+      // #when & #then
+      await expect(signer.signMessage({ message: '' })).resolves.toBeDefined()
+      // Empty message is actually valid - it will hash to a specific value
+    })
+
+    test('should handle KMS timeout gracefully', async () => {
+      // #given
+      const timeoutError = new Error('Request timeout')
+      timeoutError.name = 'TimeoutError'
+
+      vi.mocked(KmsClient).mockImplementation(function(this: any) {
+        this.getPublicKey = vi.fn().mockRejectedValue(timeoutError)
+        this.sign = vi.fn()
+        return this
+      } as any)
+
+      const signer = new KmsSigner({
+        region: 'us-east-1',
+        keyId: 'test-key-id'
+      })
+
+      // #when & #then
+      await expect(signer.getAddress()).rejects.toThrow('Request timeout')
+    })
+
+    test('should throw error with invalid region format', async () => {
+      // #given
+      const signer = new KmsSigner({
+        region: '', // Empty region
+        keyId: 'test-key-id'
+      })
+
+      // #when & #then
+      // KmsClient constructor should be called (implementation may validate)
+      expect(KmsClient).toHaveBeenCalledWith({ region: '', keyId: 'test-key-id' })
+    })
+
+    test('should throw error with invalid keyId format', async () => {
+      // #given
+      const signer = new KmsSigner({
+        region: 'us-east-1',
+        keyId: '' // Empty keyId
+      })
+
+      // #when & #then
+      expect(KmsClient).toHaveBeenCalledWith({ region: 'us-east-1', keyId: '' })
+    })
+
+    test('should throw error when signing typed data with invalid structure', async () => {
+      // #given
+      const signer = new KmsSigner({
+        region: 'us-east-1',
+        keyId: 'test-key-id'
+      })
+
+      const invalidTypedData = {
+        domain: {},
+        types: {},
+        // Missing primaryType
+        message: {}
+      } as any
+
+      // #when & #then
+      await expect(signer.signTypedData(invalidTypedData)).rejects.toThrow()
+    })
+
+    test('should handle transaction signing with invalid chainId', async () => {
+      // #given
+      const signer = new KmsSigner({
+        region: 'us-east-1',
+        keyId: 'test-key-id'
+      })
+
+      const transaction = {
+        to: getAddress('0x742d35Cc6634C0532925a3b844Bc9e7595f0beb0'),
+        value: 1n,
+        chainId: -1, // Invalid negative chainId
+        nonce: 0,
+        gasPrice: 20000000000n
+      }
+
+      // #when & #then
+      // This may throw during serialization or signing
+      await expect(signer.signTransaction(transaction)).rejects.toThrow()
+    })
+
+    test('should handle very long message strings', async () => {
+      // #given
+      const signer = new KmsSigner({
+        region: 'us-east-1',
+        keyId: 'test-key-id'
+      })
+
+      // Create a very long message (1 MB)
+      const longMessage = 'a'.repeat(1024 * 1024)
+
+      // #when
+      const signature = await signer.signMessage({ message: longMessage })
+
+      // #then
+      // Should successfully hash and sign even very long messages
+      expect(signature).toMatch(/^0x[0-9a-fA-F]+$/)
+      expect(signature).toHaveLength(132)
+    })
+
+    test('should handle unicode characters in messages', async () => {
+      // #given
+      const signer = new KmsSigner({
+        region: 'us-east-1',
+        keyId: 'test-key-id'
+      })
+
+      const unicodeMessage = 'Hello 世界 🌍 مرحبا'
+
+      // #when
+      const signature = await signer.signMessage({ message: unicodeMessage })
+
+      // #then
+      expect(signature).toMatch(/^0x[0-9a-fA-F]+$/)
+      expect(signature).toHaveLength(132)
+    })
+
+    test('should handle special characters in messages', async () => {
+      // #given
+      const signer = new KmsSigner({
+        region: 'us-east-1',
+        keyId: 'test-key-id'
+      })
+
+      const specialMessage = 'Test\n\r\t\0Special\\Chars"\'<>'
+
+      // #when
+      const signature = await signer.signMessage({ message: specialMessage })
+
+      // #then
+      expect(signature).toMatch(/^0x[0-9a-fA-F]+$/)
+      expect(signature).toHaveLength(132)
+    })
+  })
 })

@@ -15,6 +15,17 @@ import { DerParsingError } from '../errors'
  * @throws DerParsingError if public key format is invalid
  */
 export function extractPublicKeyFromDer(der: Uint8Array): Uint8Array {
+  // Validate minimum length
+  if (der.length === 0) {
+    throw new DerParsingError('Invalid DER: empty buffer')
+  }
+
+  if (der.length < 65) {
+    throw new DerParsingError(
+      `Invalid DER: buffer too short (expected at least 65 bytes, got ${der.length})`
+    )
+  }
+
   // Simple implementation: last 65 bytes are the public key
   // (0x04 + x coordinate 32 bytes + y coordinate 32 bytes)
   const publicKey = der.slice(-65)
@@ -41,6 +52,17 @@ export function extractPublicKeyFromDer(der: Uint8Array): Uint8Array {
  * @returns Ethereum address (0x-prefixed, 40 hex chars)
  */
 export function publicKeyToAddress(publicKey: Uint8Array): Address {
+  // Validate public key length
+  if (publicKey.length === 0) {
+    throw new DerParsingError('Invalid public key: empty buffer')
+  }
+
+  if (publicKey.length < 65) {
+    throw new DerParsingError(
+      `Invalid public key: expected at least 65 bytes, got ${publicKey.length}`
+    )
+  }
+
   // Remove 0x04 prefix, hash only x and y coordinates
   const publicKeyWithoutPrefix = publicKey.slice(1)
 

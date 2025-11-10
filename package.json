@@ -14,7 +14,7 @@
     "example:tx": "tsx examples/send-transaction.ts"
   },
   "keywords": [],
-  "author": "",
+  "author": "Alan Go <tae.gun7784@gmail.com>",
   "license": "MIT",
   "packageManager": "pnpm@9.0.1+sha1.0e0a9c2d140ddf9aab730067eb7bcfb9e18bdee7",
   "devDependencies": {

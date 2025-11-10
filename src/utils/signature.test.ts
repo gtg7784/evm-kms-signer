@@ -202,4 +202,180 @@ describe('uint8ArrayToBigInt', () => {
     // #then
     expect(value).toBe(0x0102n)
   })
+
+  test('should handle all zeros correctly', () => {
+    // #given
+    const bytes = new Uint8Array([0x00, 0x00, 0x00, 0x00])
+
+    // #when
+    const value = uint8ArrayToBigInt(bytes)
+
+    // #then
+    expect(value).toBe(0n)
+  })
+
+  test('should handle maximum 32-byte value (all 0xFF)', () => {
+    // #given
+    const bytes = new Uint8Array(32).fill(0xff)
+
+    // #when
+    const value = uint8ArrayToBigInt(bytes)
+
+    // #then
+    expect(value).toBe(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffn)
+  })
+
+  test('should handle 64-byte array (larger than typical signature component)', () => {
+    // #given
+    const bytes = new Uint8Array(64).fill(0x11)
+
+    // #when
+    const value = uint8ArrayToBigInt(bytes)
+
+    // #then
+    // Should successfully convert even oversized arrays
+    expect(value).toBeGreaterThan(0n)
+  })
+})
+
+describe('normalizeS - additional failure cases', () => {
+  test('should throw SignatureNormalizationError when s is exactly n', () => {
+    // #given
+    const s = SECP256K1_N
+
+    // #when & #then
+    expect(() => normalizeS(s)).toThrow(SignatureNormalizationError)
+    expect(() => normalizeS(s)).toThrow('s value out of valid range')
+  })
+
+  test('should throw SignatureNormalizationError when s > n', () => {
+    // #given
+    const s = SECP256K1_N + 1n
+
+    // #when & #then
+    expect(() => normalizeS(s)).toThrow(SignatureNormalizationError)
+    expect(() => normalizeS(s)).toThrow('s value out of valid range')
+  })
+
+  test('should throw SignatureNormalizationError when s is very large (2 * n)', () => {
+    // #given
+    const s = SECP256K1_N * 2n
+
+    // #when & #then
+    expect(() => normalizeS(s)).toThrow(SignatureNormalizationError)
+  })
+
+  test('should handle s = 1 correctly', () => {
+    // #given
+    const s = 1n
+
+    // #when
+    const normalized = normalizeS(s)
+
+    // #then
+    expect(normalized).toBe(1n)
+  })
+
+  test('should handle s = n - 1 correctly (just below n)', () => {
+    // #given
+    const s = SECP256K1_N - 1n
+
+    // #when
+    const normalized = normalizeS(s)
+
+    // #then
+    // Should normalize to 1n (since n - (n - 1) = 1)
+    expect(normalized).toBe(1n)
+    expect(normalized).toBeLessThanOrEqual(SECP256K1_N_HALF)
+  })
+})
+
+describe('calculateV - additional failure cases', () => {
+  test('should throw RecoveryIdCalculationError when recoveryId is 5', () => {
+    // #given
+    const recoveryId = 5
+
+    // #when & #then
+    expect(() => calculateV(recoveryId)).toThrow(RecoveryIdCalculationError)
+    expect(() => calculateV(recoveryId)).toThrow('Invalid recovery ID')
+  })
+
+  test('should throw RecoveryIdCalculationError when recoveryId is -999', () => {
+    // #given
+    const recoveryId = -999
+
+    // #when & #then
+    expect(() => calculateV(recoveryId)).toThrow(RecoveryIdCalculationError)
+  })
+
+  test('should throw error when recoveryId is fractional (via type coercion)', () => {
+    // #given
+    const recoveryId = 1.5 as number
+
+    // #when & #then
+    // Will throw RangeError from BigInt conversion, not RecoveryIdCalculationError
+    expect(() => calculateV(recoveryId)).toThrow()
+    expect(() => calculateV(recoveryId)).toThrow('cannot be converted to a BigInt')
+  })
+
+  test('should handle chainId 0 correctly', () => {
+    // #given
+    const recoveryId = 0
+    const chainId = 0
+
+    // #when
+    const v = calculateV(recoveryId, chainId)
+
+    // #then
+    // v = 0 * 2 + 35 + 0 = 35
+    expect(v).toBe(35n)
+  })
+
+  test('should handle very large chainId (e.g. 999999999)', () => {
+    // #given
+    const recoveryId = 1
+    const chainId = 999999999
+
+    // #when
+    const v = calculateV(recoveryId, chainId)
+
+    // #then
+    // v = 999999999 * 2 + 35 + 1 = 2000000034
+    expect(v).toBe(2000000034n)
+  })
+
+  test('should handle recoveryId 2 with legacy signature', () => {
+    // #given
+    const recoveryId = 2
+
+    // #when
+    const v = calculateV(recoveryId)
+
+    // #then
+    expect(v).toBe(29n)
+  })
+
+  test('should handle recoveryId 3 with legacy signature', () => {
+    // #given
+    const recoveryId = 3
+
+    // #when
+    const v = calculateV(recoveryId)
+
+    // #then
+    expect(v).toBe(30n)
+  })
+
+  test('should handle recoveryId 3 with chainId 11155111 (Sepolia)', () => {
+    // #given
+    const recoveryId = 3
+    const chainId = 11155111
+
+    // #when
+    const v = calculateV(recoveryId, chainId)
+
+    // #then
+    // v = 11155111 * 2 + 35 + 3 = 22310260
+    expect(v).toBe(22310260n)
+  })
 })
