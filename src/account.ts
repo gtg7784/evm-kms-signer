@@ -1,5 +1,5 @@
 import { toAccount } from 'viem/accounts'
-import type { Account } from 'viem'
+import type { LocalAccount } from 'viem'
 import { KmsSigner } from './kms/signer'
 
 /**
@@ -23,7 +23,7 @@ import { KmsSigner } from './kms/signer'
  * })
  * ```
  */
-export async function toKmsAccount(signer: KmsSigner): Promise<Account> {
+export async function toKmsAccount(signer: KmsSigner): Promise<LocalAccount> {
   const address = await signer.getAddress()
 
   return toAccount({
