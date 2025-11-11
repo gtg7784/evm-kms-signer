@@ -48,7 +48,9 @@
 		"test:run": "vitest run",
 		"test:coverage": "vitest run --coverage",
 		"example:sign": "tsx examples/sign-message.ts",
-		"example:tx": "tsx examples/send-transaction.ts"
+		"example:tx": "tsx examples/send-transaction.ts",
+		"example:gcp-sign": "tsx examples/gcp-sign-message.ts",
+		"example:gcp-tx": "tsx examples/gcp-send-transaction.ts"
 	},
 	"author": "Alan Go <tae.gun7784@gmail.com>",
 	"license": "MIT",
