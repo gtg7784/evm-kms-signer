@@ -360,4 +360,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 - Built with [viem](https://viem.sh) - Modern TypeScript Ethereum library
 - Uses [AWS SDK for JavaScript v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/)
+- Uses [Google Cloud KMS Client Library](https://cloud.google.com/nodejs/docs/reference/kms/latest)
 - Inspired by the need for secure key management in Ethereum applications
