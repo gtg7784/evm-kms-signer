@@ -2,7 +2,7 @@
 	"name": "evm-kms-signer",
 	"version": "1.0.1",
 	"type": "module",
-	"description": "AWS KMS-based Ethereum signer for viem with enterprise-grade security. Sign transactions and messages using keys stored in AWS KMS without exposing private keys.",
+	"description": "AWS/GCP KMS-based Ethereum signer for viem with enterprise-grade security. Sign transactions and messages using keys stored in AWS or GCP KMS without exposing private keys.",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"exports": {
@@ -21,6 +21,8 @@
 		"ethereum",
 		"aws",
 		"kms",
+		"gcp",
+		"google-cloud",
 		"viem",
 		"signer",
 		"evm",

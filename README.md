@@ -1,16 +1,17 @@
 # evm-kms-signer
 
-A TypeScript library that integrates AWS KMS (Key Management Service) with [viem](https://viem.sh) to create secure Ethereum signers. This allows you to sign Ethereum transactions and messages using keys stored in AWS KMS, providing enterprise-grade security for your Ethereum operations.
+A TypeScript library that integrates AWS/GCP KMS (Key Management Service) with [viem](https://viem.sh) to create secure Ethereum signers. This allows you to sign Ethereum transactions and messages using keys stored in AWS or GCP KMS, providing enterprise-grade security for your Ethereum operations.
 
 ## Features
 
 - **AWS KMS Integration**: Sign Ethereum transactions using keys securely stored in AWS KMS
+- **GCP KMS Support**: Also supports Google Cloud Platform KMS for multi-cloud deployments
 - **Full EIP Compliance**: Supports EIP-191 (personal messages), EIP-712 (typed data), EIP-155 (replay protection), EIP-2 (signature normalization)
 - **Type-Safe**: Built with TypeScript in strict mode with comprehensive type definitions
 - **viem Compatible**: Seamlessly integrates with viem's Account system via `toAccount`
-- **DER Signature Parsing**: Automatically converts AWS KMS DER-encoded signatures to Ethereum format
+- **DER Signature Parsing**: Automatically converts AWS/GCP KMS DER-encoded signatures to Ethereum format
 - **Comprehensive Error Handling**: Custom error classes for better debugging
-- **Well-Tested**: 51 tests covering all functionality with 100% type safety
+- **Well-Tested**: 169 tests covering all functionality with 100% type safety
 
 ## Installation
 
@@ -30,9 +31,11 @@ Or with yarn:
 yarn add evm-kms-signer
 ```
 
-## Prerequisites
+## Usage
 
-### AWS KMS Key Setup
+### AWS KMS
+
+#### Prerequisites
 
 1. **Create an ECC Key in AWS KMS**:
    - Go to AWS KMS Console
@@ -50,7 +53,7 @@ yarn add evm-kms-signer
 3. **Note Your Key ID**:
    Copy the Key ARN or Key ID for use in your application.
 
-### Environment Variables
+#### Environment Variables
 
 Create a `.env` file in your project root:
 
@@ -63,9 +66,7 @@ AWS_ACCESS_KEY_ID=your_access_key
 AWS_SECRET_ACCESS_KEY=your_secret_key
 ```
 
-## Quick Start
-
-### Signing a Message
+#### Basic Usage
 
 ```typescript
 import 'dotenv/config'
@@ -93,7 +94,7 @@ async function main() {
 main().catch(console.error)
 ```
 
-### Sending a Transaction
+#### Use with viem
 
 ```typescript
 import 'dotenv/config'
@@ -128,6 +129,63 @@ async function main() {
 }
 
 main().catch(console.error)
+```
+
+### GCP KMS
+
+#### Prerequisites
+
+1. **Create a KMS key ring and crypto key in GCP Console**:
+   - Go to Google Cloud Console → Security → Key Management
+   - Create a new key ring in your desired location
+   - Create a crypto key with purpose "Asymmetric sign"
+   - Choose **Elliptic Curve P-256 - SHA256 Digest** algorithm (secp256k1 for Ethereum)
+
+2. **Grant Permissions**:
+   Grant `roles/cloudkms.cryptoKeySignerVerifier` permission to your service account:
+   ```bash
+   gcloud kms keys add-iam-policy-binding KEY_ID \
+     --location=LOCATION \
+     --keyring=KEYRING_ID \
+     --member=serviceAccount:SERVICE_ACCOUNT_EMAIL \
+     --role=roles/cloudkms.cryptoKeySignerVerifier
+   ```
+
+3. **Set up authentication**:
+   - Set `GOOGLE_APPLICATION_CREDENTIALS` environment variable pointing to your service account key file, or
+   - Pass `keyFilename` in config
+
+#### Basic Usage
+
+```typescript
+import { GcpKmsSigner } from 'evm-kms-signer';
+
+const signer = new GcpKmsSigner({
+  projectId: 'your-project-id',
+  locationId: 'global',
+  keyRingId: 'your-keyring-id',
+  keyId: 'your-key-id',
+  keyVersion: '1',
+  keyFilename: '/path/to/service-account-key.json', // optional
+});
+
+const address = await signer.getAddress();
+const signature = await signer.signMessage({ message: 'Hello!' });
+```
+
+#### Use with viem
+
+```typescript
+import { createWalletClient, http } from 'viem';
+import { mainnet } from 'viem/chains';
+import { toGcpKmsAccount } from 'evm-kms-signer';
+
+const account = await toGcpKmsAccount(signer);
+const client = createWalletClient({
+  account,
+  chain: mainnet,
+  transport: http(),
+});
 ```
 
 ## API Documentation
