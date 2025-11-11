@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { createWalletClient, http } from 'viem';
 import { sepolia } from 'viem/chains';
-import { GcpKmsSigner, toGcpKmsAccount } from '../src';
+import { GcpSigner, toGcpKmsAccount } from '../src';
 
 async function main() {
 	// Validate environment variables
@@ -19,7 +19,7 @@ async function main() {
 	}
 
 	// Create GCP KMS Signer
-	const signer = new GcpKmsSigner({
+	const signer = new GcpSigner({
 		projectId: process.env.GCP_PROJECT_ID as string,
 		locationId: process.env.GCP_LOCATION_ID as string,
 		keyRingId: process.env.GCP_KEY_RING_ID as string,

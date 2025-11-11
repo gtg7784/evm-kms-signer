@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { GcpKmsSigner, toGcpKmsAccount } from '../src';
+import { GcpSigner, toGcpKmsAccount } from '../src';
 
 async function main() {
 	// Validate environment variables
@@ -17,7 +17,7 @@ async function main() {
 	}
 
 	// GCP KMS configuration
-	const signer = new GcpKmsSigner({
+	const signer = new GcpSigner({
 		projectId: process.env.GCP_PROJECT_ID as string,
 		locationId: process.env.GCP_LOCATION_ID as string,
 		keyRingId: process.env.GCP_KEY_RING_ID as string,

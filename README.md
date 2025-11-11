@@ -158,9 +158,9 @@ main().catch(console.error)
 #### Basic Usage
 
 ```typescript
-import { GcpKmsSigner } from 'evm-kms-signer';
+import { GcpSigner } from 'evm-kms-signer';
 
-const signer = new GcpKmsSigner({
+const signer = new GcpSigner({
   projectId: 'your-project-id',
   locationId: 'global',
   keyRingId: 'your-keyring-id',
