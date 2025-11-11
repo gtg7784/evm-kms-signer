@@ -23,6 +23,42 @@ export interface KmsConfig {
 }
 
 /**
+ * GCP KMS configuration for signing operations
+ */
+export interface GcpKmsConfig {
+	/**
+	 * GCP project ID where the KMS key is located
+	 */
+	projectId: string;
+
+	/**
+	 * GCP location/region (e.g., "global", "us-east1")
+	 */
+	locationId: string;
+
+	/**
+	 * Key ring ID containing the crypto key
+	 */
+	keyRingId: string;
+
+	/**
+	 * Crypto key ID to use for signing
+	 */
+	keyId: string;
+
+	/**
+	 * Crypto key version number (e.g., "1")
+	 */
+	keyVersion: string;
+
+	/**
+	 * Optional path to service account key file.
+	 * If not provided, uses GOOGLE_APPLICATION_CREDENTIALS environment variable
+	 */
+	keyFilename?: string;
+}
+
+/**
  * DER-parsed signature as raw byte arrays
  * Used internally by DER parsing utilities
  */
