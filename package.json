@@ -81,7 +81,7 @@
 	"pnpm": {
 		"overrides": {
 			"jws": "^4.0.1",
-			"rimraf>glob": "^10.5.0"
+			"rimraf>glob": "^13.0.0"
 		}
 	}
 }
