@@ -38,8 +38,13 @@ export class KmsClient {
 	 * @remarks
 	 * If credentials are not provided, the AWS SDK will use the default credential provider chain:
 	 * - Environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+	 * - EKS Pod Identity (AWS_CONTAINER_CREDENTIALS_FULL_URI)
+	 * - ECS container credentials
+	 * - EC2 instance metadata (IMDS)
 	 * - Shared credentials file (~/.aws/credentials)
-	 * - IAM role for EC2 instances or ECS tasks
+	 *
+	 * For EKS deployments, simply omit the credentials parameter and configure
+	 * Pod Identity association - the SDK will automatically discover credentials.
 	 */
 	constructor(config: KmsConfig) {
 		this.client = new KMSClient({
