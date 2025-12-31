@@ -138,6 +138,81 @@ async function main() {
 main().catch(console.error)
 ```
 
+#### EKS Pod Identity
+
+This library fully supports [EKS Pod Identity](https://docs.aws.amazon.com/eks/latest/userguide/pod-identities.html) for secure, credential-free authentication in Kubernetes environments. When running in EKS with Pod Identity configured, no explicit credentials are needed.
+
+##### How It Works
+
+The AWS SDK for JavaScript v3 automatically detects and uses the default credential provider chain:
+
+1. **Environment variables** (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`)
+2. **EKS Pod Identity** (`AWS_CONTAINER_CREDENTIALS_FULL_URI`)
+3. **ECS container credentials**
+4. **EC2 instance metadata (IMDS)**
+5. **Shared credentials file** (`~/.aws/credentials`)
+
+When credentials are not explicitly provided, the SDK automatically discovers available credentials in the above order.
+
+##### Setup Steps
+
+1. **Install the EKS Pod Identity Agent** addon in your cluster:
+   ```bash
+   aws eks create-addon \
+     --cluster-name <cluster-name> \
+     --addon-name eks-pod-identity-agent
+   ```
+
+2. **Create an IAM role** with the required KMS permissions:
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Action": [
+           "kms:GetPublicKey",
+           "kms:Sign"
+         ],
+         "Resource": "arn:aws:kms:<region>:<account-id>:key/<key-id>"
+       }
+     ]
+   }
+   ```
+
+3. **Create a Pod Identity association**:
+   ```bash
+   aws eks create-pod-identity-association \
+     --cluster-name <cluster-name> \
+     --namespace <namespace> \
+     --service-account <service-account-name> \
+     --role-arn arn:aws:iam::<account-id>:role/<role-name>
+   ```
+
+4. **Use the library without explicit credentials**:
+   ```typescript
+   import { KmsSigner, toKmsAccount } from 'evm-kms-signer'
+
+   // No credentials needed - EKS Pod Identity handles authentication
+   const signer = new KmsSigner({
+     region: process.env.AWS_REGION!,
+     keyId: process.env.KMS_KEY_ID!,
+     // credentials are automatically discovered via Pod Identity
+   })
+
+   const account = await toKmsAccount(signer)
+   ```
+
+##### Verification
+
+To verify Pod Identity is working, check that these environment variables are set in your pod:
+```bash
+kubectl exec -it <pod-name> -- env | grep AWS_CONTAINER
+# Should show:
+# AWS_CONTAINER_CREDENTIALS_FULL_URI=http://169.254.170.23/v1/credentials
+# AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE=/var/run/secrets/pods.eks.amazonaws.com/serviceaccount/eks-pod-identity-token
+```
+
 ### GCP KMS
 
 #### Prerequisites
@@ -320,10 +395,11 @@ The library provides custom error classes for better error handling:
 ### Best Practices
 
 1. **Use IAM Roles**: Prefer IAM roles over hardcoded credentials in production
-2. **Environment Variables**: Never commit `.env` files with credentials
-3. **Key Policies**: Restrict KMS key usage to specific AWS principals
-4. **Audit Logging**: Enable AWS CloudTrail to monitor KMS key usage
-5. **Network Security**: Use VPC endpoints for KMS in production environments
+2. **Use EKS Pod Identity**: For Kubernetes deployments, use [EKS Pod Identity](#eks-pod-identity) for secure, automatic credential management
+3. **Environment Variables**: Never commit `.env` files with credentials
+4. **Key Policies**: Restrict KMS key usage to specific AWS principals
+5. **Audit Logging**: Enable AWS CloudTrail to monitor KMS key usage
+6. **Network Security**: Use VPC endpoints for KMS in production environments
 
 ## Development
 
