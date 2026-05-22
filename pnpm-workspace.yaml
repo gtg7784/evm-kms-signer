@@ -1,0 +1,7 @@
+overrides:
+  jws: ^4.0.1
+  rimraf>glob: ^13.0.0
+
+allowBuilds:
+  esbuild: true
+  protobufjs: true

@@ -57,7 +57,7 @@
 	"author": "Alan Go <tae.gun7784@gmail.com>",
 	"license": "MIT",
 	"engines": {
-		"node": ">=18.0.0"
+		"node": ">=22.13.0"
 	},
 	"packageManager": "pnpm@11.2.2",
 	"peerDependencies": {
@@ -77,11 +77,5 @@
 		"typescript": "^6.0.0",
 		"viem": "^2.0.0",
 		"vitest": "^4.0.8"
-	},
-	"pnpm": {
-		"overrides": {
-			"jws": "^4.0.1",
-			"rimraf>glob": "^13.0.0"
-		}
 	}
 }

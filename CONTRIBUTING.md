@@ -21,8 +21,8 @@ By participating in this project, you agree to maintain a respectful and inclusi
 
 ### Prerequisites
 
-- Node.js >= 18.0.0
-- pnpm 9.x
+- Node.js >= 22.13.0
+- pnpm 11.x
 - AWS Account (for testing with real KMS keys)
 - Git
 
