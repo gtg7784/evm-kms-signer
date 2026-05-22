@@ -1,0 +1,12 @@
+# Renovate bumps dependencies faster than pnpm 11's default minimumReleaseAge
+# (1 day) and would block every dependency PR. Renovate's own release-age
+# policy already gates updates, so opt out of pnpm's redundant check.
+minimumReleaseAge: 0
+
+overrides:
+  jws: ^4.0.1
+  "rimraf>glob": ^13.0.0
+
+allowBuilds:
+  esbuild: true
+  protobufjs: true
