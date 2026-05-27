@@ -7,6 +7,7 @@ import {
 import {
 	calculateRecoveryId,
 	calculateV,
+	calculateYParity,
 	normalizeS,
 	SECP256K1_N,
 	SECP256K1_N_HALF,
@@ -394,6 +395,74 @@ describe('calculateV - additional failure cases', () => {
 		// #then
 		// v = 11155111 * 2 + 35 + 3 = 22310260
 		expect(v).toBe(22310260n);
+	});
+});
+
+describe('calculateYParity', () => {
+	test('should return 0 for recoveryId 0', () => {
+		// #given
+		const recoveryId = 0;
+
+		// #when
+		const yParity = calculateYParity(recoveryId);
+
+		// #then
+		expect(yParity).toBe(0);
+	});
+
+	test('should return 1 for recoveryId 1', () => {
+		// #given
+		const recoveryId = 1;
+
+		// #when
+		const yParity = calculateYParity(recoveryId);
+
+		// #then
+		expect(yParity).toBe(1);
+	});
+
+	test('should return 0 for recoveryId 2', () => {
+		// #given
+		const recoveryId = 2;
+
+		// #when
+		const yParity = calculateYParity(recoveryId);
+
+		// #then
+		expect(yParity).toBe(0);
+	});
+
+	test('should return 1 for recoveryId 3', () => {
+		// #given
+		const recoveryId = 3;
+
+		// #when
+		const yParity = calculateYParity(recoveryId);
+
+		// #then
+		expect(yParity).toBe(1);
+	});
+
+	test('should throw RecoveryIdCalculationError when recoveryId < 0', () => {
+		// #given
+		const recoveryId = -1;
+
+		// #when & #then
+		expect(() => calculateYParity(recoveryId)).toThrow(
+			RecoveryIdCalculationError,
+		);
+		expect(() => calculateYParity(recoveryId)).toThrow('Invalid recovery ID');
+	});
+
+	test('should throw RecoveryIdCalculationError when recoveryId > 3', () => {
+		// #given
+		const recoveryId = 4;
+
+		// #when & #then
+		expect(() => calculateYParity(recoveryId)).toThrow(
+			RecoveryIdCalculationError,
+		);
+		expect(() => calculateYParity(recoveryId)).toThrow('Invalid recovery ID');
 	});
 });
 

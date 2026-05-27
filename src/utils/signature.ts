@@ -123,6 +123,12 @@ export async function calculateRecoveryId(
  * @param chainId - Optional chain ID for EIP-155 signatures
  * @returns The v value as bigint
  *
+ * @remarks
+ * This is only valid for legacy (type 0) transactions and EIP-191 / EIP-712
+ * signatures. Typed transactions (EIP-2930, EIP-1559, EIP-4844, EIP-7702)
+ * encode the parity bit as `yParity`, not as an EIP-155 `v`. Use
+ * {@link calculateYParity} for those.
+ *
  * @example
  * ```typescript
  * // Legacy signature (no chain ID)
@@ -146,6 +152,35 @@ export function calculateV(recoveryId: number, chainId?: number): bigint {
 
 	// Legacy: v = 27 + recoveryId
 	return BigInt(27 + recoveryId);
+}
+
+/**
+ * Calculates the yParity value for a typed transaction signature.
+ *
+ * Typed Ethereum transactions (EIP-2930, EIP-1559, EIP-4844, EIP-7702) encode
+ * the recovery bit as `yParity` (0 or 1) instead of the legacy EIP-155 `v`.
+ * The yParity is derived from the recovery id modulo 2.
+ *
+ * @param recoveryId - The recovery ID (0-3)
+ * @returns The yParity value (0 or 1)
+ * @throws {RecoveryIdCalculationError} If recoveryId is out of range
+ *
+ * @example
+ * ```typescript
+ * calculateYParity(0) // returns 0
+ * calculateYParity(1) // returns 1
+ * calculateYParity(2) // returns 0
+ * calculateYParity(3) // returns 1
+ * ```
+ */
+export function calculateYParity(recoveryId: number): 0 | 1 {
+	if (recoveryId < 0 || recoveryId > 3) {
+		throw new RecoveryIdCalculationError(
+			`Invalid recovery ID (must be 0-3): ${recoveryId}`,
+		);
+	}
+
+	return (recoveryId % 2) as 0 | 1;
 }
 
 /**
