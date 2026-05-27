@@ -5,7 +5,7 @@ import {
 	KmsSignerError,
 	RecoveryIdCalculationError,
 	SignatureNormalizationError,
-} from './index';
+} from './index.js';
 
 describe('KmsSignerError', () => {
 	test('should create error with correct name and message', () => {

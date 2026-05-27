@@ -3,8 +3,8 @@ import { fromHex, recoverPublicKey } from 'viem';
 import {
 	RecoveryIdCalculationError,
 	SignatureNormalizationError,
-} from '../errors';
-import { publicKeyToAddress } from './address';
+} from '../errors/index.js';
+import { publicKeyToAddress } from './address.js';
 
 /**
  * secp256k1 curve order (n)

@@ -1,7 +1,7 @@
 import type { LocalAccount } from 'viem';
 import { toAccount } from 'viem/accounts';
-import type { GcpSigner } from './gcp/signer';
-import type { KmsSigner } from './kms/signer';
+import type { GcpSigner } from './gcp/signer.js';
+import type { KmsSigner } from './kms/signer.js';
 
 /**
  * Create a viem Account from KmsSigner.

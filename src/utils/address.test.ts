@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { DerParsingError } from '../errors';
-import { extractPublicKeyFromDer, publicKeyToAddress } from './address';
+import { DerParsingError } from '../errors/index.js';
+import { extractPublicKeyFromDer, publicKeyToAddress } from './address.js';
 
 describe('extractPublicKeyFromDer', () => {
 	test('should extract 65-byte public key from DER-encoded bytes', () => {

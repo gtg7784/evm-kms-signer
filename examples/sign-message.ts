@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { KmsSigner, toKmsAccount } from '../src';
+import { KmsSigner, toKmsAccount } from '../src/index.js';
 
 async function main() {
 	// Validate environment variables

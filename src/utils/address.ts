@@ -1,5 +1,5 @@
 import { type Address, keccak256, toHex } from 'viem';
-import { DerParsingError } from '../errors';
+import { DerParsingError } from '../errors/index.js';
 
 /**
  * Extract uncompressed public key from DER-encoded SubjectPublicKeyInfo

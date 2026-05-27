@@ -11,13 +11,13 @@ import {
 	sign as viemSign,
 } from 'viem/accounts';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { GcpClient } from './gcp/client';
-import { GcpSigner } from './gcp/signer';
-import { KmsClient } from './kms/client';
-import { KmsSigner } from './kms/signer';
+import { GcpClient } from './gcp/client.js';
+import { GcpSigner } from './gcp/signer.js';
+import { KmsClient } from './kms/client.js';
+import { KmsSigner } from './kms/signer.js';
 
-vi.mock('./kms/client', () => ({ KmsClient: vi.fn() }));
-vi.mock('./gcp/client', () => ({ GcpClient: vi.fn() }));
+vi.mock('./kms/client.js', () => ({ KmsClient: vi.fn() }));
+vi.mock('./gcp/client.js', () => ({ GcpClient: vi.fn() }));
 
 // ASN.1 DER encoder for a secp256k1 ECDSA signature (SEQUENCE { INTEGER r, INTEGER s }).
 // Mirrors what AWS/GCP KMS returns so tests can feed real viem-produced signatures

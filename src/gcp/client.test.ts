@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { KmsClientError } from '../errors';
-import type { GcpKmsConfig } from '../types';
-import { GcpClient } from './client';
+import { KmsClientError } from '../errors/index.js';
+import type { GcpKmsConfig } from '../types/index.js';
+import { GcpClient } from './client.js';
 
 // Mock @google-cloud/kms SDK
 vi.mock('@google-cloud/kms', () => ({

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { DerParsingError } from '../errors';
-import { parseDerSignature } from './der';
+import { DerParsingError } from '../errors/index.js';
+import { parseDerSignature } from './der.js';
 
 describe('parseDerSignature', () => {
 	test('should parse valid DER signature with 32-byte r and s', () => {

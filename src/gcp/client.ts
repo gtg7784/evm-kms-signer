@@ -1,6 +1,6 @@
 import { KeyManagementServiceClient } from '@google-cloud/kms';
-import { KmsClientError } from '../errors';
-import type { GcpKmsConfig } from '../types';
+import { KmsClientError } from '../errors/index.js';
+import type { GcpKmsConfig } from '../types/index.js';
 
 /**
  * GcpClient wraps GCP KMS SDK operations for key management and signing.
