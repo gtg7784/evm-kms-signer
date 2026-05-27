@@ -330,3 +330,108 @@ describe('signTransaction yParity round-trip (issue #98)', () => {
 		});
 	});
 });
+
+// Issue #102 reported a ~50% failure rate for EIP-1559 transactions: whenever
+// the recovery id happened to be 0 the previous code fed an EIP-155 v
+// (e.g. v=37 on mainnet) into viem's typed serializer, which silently fell
+// back to `yParity = 1` and produced a signature that recovered to the wrong
+// address. We iterate over many random keys so both recoveryId values are
+// statistically guaranteed to be exercised in a single test run; without the
+// fix shipped in #111 the recoveryId=0 iterations would fail.
+const STATISTICAL_ITERATIONS = 25;
+
+describe('signTransaction yParity round-trip (issue #102 regression)', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	test('KmsSigner: EIP-1559 round-trips across many keys, covering both yParity 0 and 1', async () => {
+		// #given
+		const observedYParities = new Set<number>();
+
+		for (let i = 0; i < STATISTICAL_ITERATIONS; i++) {
+			const privateKey = generatePrivateKey();
+			const account = setupRealCryptoMock(vi.mocked(KmsClient), privateKey);
+			const signer = new KmsSigner({
+				region: 'us-east-1',
+				keyId: 'test-key',
+			});
+			const transaction: TransactionSerializable = {
+				type: 'eip1559',
+				chainId: 1,
+				nonce: i,
+				maxFeePerGas: 12_090_378n,
+				maxPriorityFeePerGas: 1_000_000n,
+				gas: 59_850n,
+				to: getAddress('0x6f394dd59f2301340efb711c97b0bb2711915058'),
+				value: 0n,
+				data: '0x',
+			};
+
+			// #when
+			const serialized = await signer.signTransaction(transaction);
+
+			// #then
+			const recovered = await recoverTransactionAddress({
+				serializedTransaction: serialized,
+			});
+			expect(recovered).toBe(account.address);
+
+			const parsed = parseTransaction(serialized);
+			expect(parsed.type).toBe('eip1559');
+			expect(parsed.yParity === 0 || parsed.yParity === 1).toBe(true);
+			observedYParities.add(parsed.yParity as number);
+		}
+
+		// Statistical guarantee: with 25 random keys the probability of seeing
+		// only one yParity value is 2 * 2^-25 ≈ 6e-8.
+		expect(observedYParities.has(0)).toBe(true);
+		expect(observedYParities.has(1)).toBe(true);
+	});
+
+	test('GcpSigner: EIP-1559 round-trips across many keys, covering both yParity 0 and 1', async () => {
+		// #given
+		const observedYParities = new Set<number>();
+
+		for (let i = 0; i < STATISTICAL_ITERATIONS; i++) {
+			const privateKey = generatePrivateKey();
+			const account = setupRealCryptoMock(vi.mocked(GcpClient), privateKey);
+			const signer = new GcpSigner({
+				projectId: 'test-project',
+				locationId: 'global',
+				keyRingId: 'test-keyring',
+				keyId: 'test-key',
+				keyVersion: '1',
+			});
+			const transaction: TransactionSerializable = {
+				type: 'eip1559',
+				chainId: 1,
+				nonce: i,
+				maxFeePerGas: 12_090_378n,
+				maxPriorityFeePerGas: 1_000_000n,
+				gas: 59_850n,
+				to: getAddress('0x6f394dd59f2301340efb711c97b0bb2711915058'),
+				value: 0n,
+				data: '0x',
+			};
+
+			// #when
+			const serialized = await signer.signTransaction(transaction);
+
+			// #then
+			const recovered = await recoverTransactionAddress({
+				serializedTransaction: serialized,
+			});
+			expect(recovered).toBe(account.address);
+
+			const parsed = parseTransaction(serialized);
+			expect(parsed.type).toBe('eip1559');
+			expect(parsed.yParity === 0 || parsed.yParity === 1).toBe(true);
+			observedYParities.add(parsed.yParity as number);
+		}
+
+		// Statistical guarantee: same probability as the KmsSigner case.
+		expect(observedYParities.has(0)).toBe(true);
+		expect(observedYParities.has(1)).toBe(true);
+	});
+});
