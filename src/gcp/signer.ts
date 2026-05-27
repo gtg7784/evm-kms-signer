@@ -9,6 +9,7 @@ import type {
 import {
 	concat,
 	fromHex,
+	getTransactionType,
 	hashMessage,
 	hashTypedData,
 	keccak256,
@@ -20,6 +21,8 @@ import { extractPublicKeyFromDer, publicKeyToAddress } from '../utils/address';
 import { parseDerSignature } from '../utils/der';
 import {
 	calculateRecoveryId,
+	calculateV,
+	calculateYParity,
 	normalizeS,
 	uint8ArrayToBigInt,
 } from '../utils/signature';
@@ -256,12 +259,15 @@ export class GcpSigner {
 			serializer = serializeTransaction,
 		}: { serializer?: SerializeTransactionFn } = {},
 	): Promise<Hex> {
-		// Serialize transaction for signing (without r, s, v)
+		// Strip signature-related fields (including yParity) before hashing
+		// so the unsigned payload is hashed deterministically regardless of
+		// whether the caller left stray fields on the input.
 		const serializedTx = serializeTransaction({
 			...transaction,
 			r: undefined,
 			s: undefined,
 			v: undefined,
+			yParity: undefined,
 		});
 		const hash = keccak256(serializedTx);
 
@@ -277,18 +283,29 @@ export class GcpSigner {
 			address,
 		);
 
-		// Calculate v value
-		const chainId = transaction.chainId;
-		const v = chainId
-			? BigInt(chainId * 2 + 35 + recoveryId) // EIP-155
-			: BigInt(27 + recoveryId); // Legacy
+		// Typed transactions (EIP-2930/1559/4844/7702) require `yParity`.
+		// Only legacy (type 0) transactions use the EIP-155 / pre-EIP-155 `v`.
+		// The signature must be passed as the second argument to viem's
+		// serializer — `serializeTransactionLegacy` ignores r/s/v spread
+		// onto the transaction object.
+		const transactionType = getTransactionType(transaction);
+		const rHex = toHex(r, { size: 32 });
+		const sHex = toHex(s, { size: 32 });
 
-		// Final serialization with signature
-		return serializer({
-			...transaction,
-			r: toHex(r, { size: 32 }),
-			s: toHex(s, { size: 32 }),
-			v,
+		if (transactionType === 'legacy') {
+			const chainId = transaction.chainId;
+			const v =
+				chainId !== undefined
+					? calculateV(recoveryId, chainId)
+					: calculateV(recoveryId);
+
+			return serializer(transaction, { r: rHex, s: sHex, v });
+		}
+
+		return serializer(transaction, {
+			r: rHex,
+			s: sHex,
+			yParity: calculateYParity(recoveryId),
 		});
 	}
 
