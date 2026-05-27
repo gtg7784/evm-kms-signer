@@ -5,8 +5,8 @@ import {
 	SignCommand,
 	SigningAlgorithmSpec,
 } from '@aws-sdk/client-kms';
-import { KmsClientError } from '../errors';
-import type { KmsConfig } from '../types';
+import { KmsClientError } from '../errors/index.js';
+import type { KmsConfig } from '../types/index.js';
 
 /**
  * KmsClient wraps AWS KMS SDK operations for key management and signing.

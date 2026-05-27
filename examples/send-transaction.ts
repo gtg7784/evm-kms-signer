@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { createWalletClient, http } from 'viem';
 import { sepolia } from 'viem/chains';
-import { KmsSigner, toKmsAccount } from '../src';
+import { KmsSigner, toKmsAccount } from '../src/index.js';
 
 async function main() {
 	// Validate environment variables

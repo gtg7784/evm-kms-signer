@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { GcpSigner, toGcpKmsAccount } from '../src';
+import { GcpSigner, toGcpKmsAccount } from '../src/index.js';
 
 async function main() {
 	// Validate environment variables

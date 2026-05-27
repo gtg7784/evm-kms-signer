@@ -1,5 +1,5 @@
-import { DerParsingError } from '../errors';
-import type { DerSignature } from '../types';
+import { DerParsingError } from '../errors/index.js';
+import type { DerSignature } from '../types/index.js';
 
 /**
  * Parse DER-encoded ECDSA signature into r and s components

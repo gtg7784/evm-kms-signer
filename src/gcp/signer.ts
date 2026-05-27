@@ -16,17 +16,20 @@ import {
 	serializeTransaction,
 	toHex,
 } from 'viem';
-import type { GcpKmsConfig } from '../types';
-import { extractPublicKeyFromDer, publicKeyToAddress } from '../utils/address';
-import { parseDerSignature } from '../utils/der';
+import type { GcpKmsConfig } from '../types/index.js';
+import {
+	extractPublicKeyFromDer,
+	publicKeyToAddress,
+} from '../utils/address.js';
+import { parseDerSignature } from '../utils/der.js';
 import {
 	calculateRecoveryId,
 	calculateV,
 	calculateYParity,
 	normalizeS,
 	uint8ArrayToBigInt,
-} from '../utils/signature';
-import { GcpClient } from './client';
+} from '../utils/signature.js';
+import { GcpClient } from './client.js';
 
 /**
  * GcpSigner provides Ethereum signing capabilities using GCP KMS.

@@ -1,9 +1,9 @@
 import type { TransactionSerializable } from 'viem';
 import { getAddress } from 'viem';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import * as signatureUtils from '../utils/signature';
-import { GcpClient } from './client';
-import { GcpSigner } from './signer';
+import * as signatureUtils from '../utils/signature.js';
+import { GcpClient } from './client.js';
+import { GcpSigner } from './signer.js';
 
 // Valid secp256k1 DER public key (65-byte uncompressed key)
 const MOCK_DER_PUBLIC_KEY = new Uint8Array([
@@ -51,7 +51,7 @@ const MOCK_DER_SIGNATURE = new Uint8Array([
 ]);
 
 // Mock GcpClient
-vi.mock('./client', () => {
+vi.mock('./client.js', () => {
 	return {
 		GcpClient: vi.fn(),
 	};

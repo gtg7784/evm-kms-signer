@@ -6,8 +6,8 @@
 		"types": ["node", "vitest/globals"],
 
 		// Modules
-		"module": "ESNext",
-		"moduleResolution": "bundler",
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
 		"moduleDetection": "force",
 		"resolveJsonModule": true,
 

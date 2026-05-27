@@ -16,17 +16,20 @@ import {
 	serializeTransaction,
 	toHex,
 } from 'viem';
-import type { KmsConfig } from '../types';
-import { extractPublicKeyFromDer, publicKeyToAddress } from '../utils/address';
-import { parseDerSignature } from '../utils/der';
+import type { KmsConfig } from '../types/index.js';
+import {
+	extractPublicKeyFromDer,
+	publicKeyToAddress,
+} from '../utils/address.js';
+import { parseDerSignature } from '../utils/der.js';
 import {
 	calculateRecoveryId,
 	calculateV,
 	calculateYParity,
 	normalizeS,
 	uint8ArrayToBigInt,
-} from '../utils/signature';
-import { KmsClient } from './client';
+} from '../utils/signature.js';
+import { KmsClient } from './client.js';
 
 /**
  * KmsSigner provides Ethereum signing capabilities using AWS KMS.

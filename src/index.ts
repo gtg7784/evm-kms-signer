@@ -2,7 +2,7 @@
 
 // Re-export commonly used viem types for convenience
 export type { Address, Hex } from 'viem';
-export { toGcpKmsAccount, toKmsAccount } from './account';
+export { toGcpKmsAccount, toKmsAccount } from './account.js';
 // Errors
 export {
 	DerParsingError,
@@ -10,13 +10,13 @@ export {
 	KmsSignerError,
 	RecoveryIdCalculationError,
 	SignatureNormalizationError,
-} from './errors';
-export { GcpSigner } from './gcp/signer';
-export { KmsSigner } from './kms/signer';
+} from './errors/index.js';
+export { GcpSigner } from './gcp/signer.js';
+export { KmsSigner } from './kms/signer.js';
 // Types
 export type {
 	DerSignature,
 	GcpKmsConfig,
 	KmsConfig,
 	SignatureData,
-} from './types';
+} from './types/index.js';

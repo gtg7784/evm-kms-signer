@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
 	RecoveryIdCalculationError,
 	SignatureNormalizationError,
-} from '../errors';
+} from '../errors/index.js';
 import {
 	calculateRecoveryId,
 	calculateV,
@@ -12,7 +12,7 @@ import {
 	SECP256K1_N,
 	SECP256K1_N_HALF,
 	uint8ArrayToBigInt,
-} from './signature';
+} from './signature.js';
 
 describe('normalizeS', () => {
 	test('should normalize s when s > n/2', () => {
