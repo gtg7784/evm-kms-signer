@@ -59,7 +59,7 @@
 	"engines": {
 		"node": ">=22.13.0"
 	},
-	"packageManager": "pnpm@11.4.0",
+	"packageManager": "pnpm@11.5.0",
 	"peerDependencies": {
 		"viem": "^2.0.0"
 	},
