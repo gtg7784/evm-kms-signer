@@ -270,6 +270,52 @@ const client = createWalletClient({
 });
 ```
 
+### Co-signing (Multisig)
+
+`CoSigner` signs the same payload with multiple KMS keys. AWS and GCP signers can be mixed, and an optional `threshold` (M-of-N) lets signing succeed even if some keys fail.
+
+Signatures are returned sorted by signer address (ascending). For Safe multisig, sign the `SafeTx` EIP-712 typed data and pack the result with `packSafeSignatures()`:
+
+```typescript
+import { CoSigner, GcpSigner, KmsSigner, packSafeSignatures } from 'evm-kms-signer';
+
+const coSigner = new CoSigner({
+  signers: [
+    new KmsSigner({ region: 'us-east-1', keyId: 'key-1' }),
+    new KmsSigner({ region: 'us-east-1', keyId: 'key-2' }),
+    new GcpSigner({ projectId, locationId, keyRingId, keyId, keyVersion }),
+  ],
+  threshold: 2, // optional, defaults to all signers
+});
+
+const { signatures, failures } = await coSigner.signTypedData({
+  domain: { chainId: 1, verifyingContract: safeAddress },
+  types: {
+    SafeTx: [
+      { name: 'to', type: 'address' },
+      { name: 'value', type: 'uint256' },
+      { name: 'data', type: 'bytes' },
+      { name: 'operation', type: 'uint8' },
+      { name: 'safeTxGas', type: 'uint256' },
+      { name: 'baseGas', type: 'uint256' },
+      { name: 'gasPrice', type: 'uint256' },
+      { name: 'gasToken', type: 'address' },
+      { name: 'refundReceiver', type: 'address' },
+      { name: 'nonce', type: 'uint256' },
+    ],
+  },
+  primaryType: 'SafeTx',
+  message: safeTx,
+});
+
+// `signatures` argument for Safe.execTransaction
+const packed = packSafeSignatures(signatures);
+```
+
+- `signMessage({ message })` and `signTypedData(typedData)` return `{ signatures: { address, signature }[], failures: { signerIndex, error }[] }`
+- `getAddresses()` returns the signer addresses in configured order
+- Throws `CoSignThresholdError` (with `failures`) when fewer than `threshold` signers succeed
+
 ## API Documentation
 
 ### `KmsSigner`
@@ -377,6 +423,7 @@ The library provides custom error classes for better error handling:
 - `KmsClientError`: Thrown when AWS KMS operations fail
 - `SignatureNormalizationError`: Thrown when signature normalization fails
 - `RecoveryIdCalculationError`: Thrown when recovery ID calculation fails
+- `CoSignThresholdError`: Thrown when fewer than `threshold` co-signers succeed (includes `failures`)
 
 ## Security Considerations
 

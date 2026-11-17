@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import {
+	CoSignThresholdError,
 	DerParsingError,
 	KmsClientError,
 	KmsSignerError,
@@ -115,5 +116,24 @@ describe('RecoveryIdCalculationError', () => {
 		expect(error).toBeInstanceOf(RecoveryIdCalculationError);
 		expect(error.name).toBe('RecoveryIdCalculationError');
 		expect(error.message).toBe(message);
+	});
+});
+
+describe('CoSignThresholdError', () => {
+	test('should create error with correct name, message and failures', () => {
+		// #given
+		const message = 'Co-signing failed';
+		const failures = [{ signerIndex: 1, error: new Error('KMS down') }];
+
+		// #when
+		const error = new CoSignThresholdError(message, failures);
+
+		// #then
+		expect(error).toBeInstanceOf(Error);
+		expect(error).toBeInstanceOf(KmsSignerError);
+		expect(error).toBeInstanceOf(CoSignThresholdError);
+		expect(error.name).toBe('CoSignThresholdError');
+		expect(error.message).toBe(message);
+		expect(error.failures).toBe(failures);
 	});
 });

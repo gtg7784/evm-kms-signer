@@ -35,3 +35,13 @@ export class RecoveryIdCalculationError extends KmsSignerError {
 		this.name = 'RecoveryIdCalculationError';
 	}
 }
+
+export class CoSignThresholdError extends KmsSignerError {
+	constructor(
+		message: string,
+		public readonly failures: { signerIndex: number; error: Error }[] = [],
+	) {
+		super(message);
+		this.name = 'CoSignThresholdError';
+	}
+}
