@@ -1,3 +1,6 @@
+import type { Address, Hex } from 'viem';
+import type { KmsSigner } from '../kms/signer.js';
+
 /**
  * AWS KMS configuration for signing operations
  */
@@ -95,4 +98,74 @@ export interface SignatureData {
 	 * - 35+ for EIP-155 signatures (includes chain ID)
 	 */
 	v: bigint;
+}
+
+/**
+ * A signer that can participate in co-signing.
+ * Both KmsSigner and GcpSigner satisfy this shape.
+ */
+export type CoSignerMember = Pick<
+	KmsSigner,
+	'getAddress' | 'signMessage' | 'signTypedData'
+>;
+
+/**
+ * Co-signer configuration
+ */
+export interface CoSignerConfig {
+	/**
+	 * Signers that sign the same payload (AWS and GCP signers can be mixed)
+	 */
+	signers: CoSignerMember[];
+
+	/**
+	 * Minimum number of successful signatures required.
+	 * Defaults to signers.length (all signers must sign).
+	 */
+	threshold?: number;
+}
+
+/**
+ * Signature produced by a single co-signer
+ */
+export interface CoSignature {
+	/**
+	 * Address of the signer that produced the signature
+	 */
+	address: Address;
+
+	/**
+	 * Signature in r (32 bytes) + s (32 bytes) + v (1 byte) format
+	 */
+	signature: Hex;
+}
+
+/**
+ * Signer that failed to sign during co-signing
+ */
+export interface CoSignFailure {
+	/**
+	 * Index of the failed signer in CoSignerConfig.signers
+	 */
+	signerIndex: number;
+
+	/**
+	 * Error thrown by the signer
+	 */
+	error: Error;
+}
+
+/**
+ * Result of a co-signing operation
+ */
+export interface CoSignResult {
+	/**
+	 * Successful signatures, sorted by signer address in ascending order
+	 */
+	signatures: CoSignature[];
+
+	/**
+	 * Signers that failed (only possible when threshold < signers.length)
+	 */
+	failures: CoSignFailure[];
 }
