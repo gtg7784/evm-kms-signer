@@ -5,7 +5,7 @@ minimumReleaseAge: 0
 
 overrides:
   jws: ^4.0.1
-  "rimraf>glob": ^13.0.0
+  "rimraf>glob": ^14.0.0
 
 allowBuilds:
   esbuild: true
