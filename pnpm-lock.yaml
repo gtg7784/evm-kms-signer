@@ -209,7 +209,7 @@ importers:
         version: 7.0.2
       viem:
         specifier: ^2.0.0
-        version: 2.58.0(typescript@7.0.2)
+        version: 2.58.8(typescript@7.0.2)
       vitest:
         specifier: ^5.0.0
         version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(@vitest/coverage-v8@5.1.0)(vite@8.0.14(@types/node@24.19.2)(esbuild@0.28.1)(tsx@4.23.15))
@@ -579,10 +579,6 @@ packages:
 
   '@noble/curves@1.9.1':
     resolution: {integrity: sha512-k11yZxZg+t+gWvBbIswW0yoJlu8cHOC7dhunwOzoWH/mXGBiYyR4YY6hAEK/3EUs4UpB8la1RfdRpeGsFHkWsA==}
-    engines: {node: ^14.21.3 || >=16}
-
-  '@noble/curves@1.9.7':
-    resolution: {integrity: sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw==}
     engines: {node: ^14.21.3 || >=16}
 
   '@noble/hashes@1.8.0':
@@ -1356,8 +1352,8 @@ packages:
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
-  viem@2.58.0:
-    resolution: {integrity: sha512-oBGZGy6VptLmAATtEua71a7FzCXT5y74dQoeDP8EDHmBsWhQ34rXeHKz6tHeciKWnJ3zBT1u8sby8tAtg0gouA==}
+  viem@2.58.8:
+    resolution: {integrity: sha512-kQBP9j2gkL1j+eCIV3qs+cfS2NvltlNX2BcJ2C1qKlCIjP6ibqvIlZSJN8OJ+CR8j/pJpUUoG97179upObcw3g==}
     peerDependencies:
       mppx: '>=0.17.0'
       typescript: '>=5.0.4'
@@ -1836,10 +1832,6 @@ snapshots:
     dependencies:
       '@noble/hashes': 1.8.0
 
-  '@noble/curves@1.9.7':
-    dependencies:
-      '@noble/hashes': 1.8.0
-
   '@noble/hashes@1.8.0': {}
 
   '@opentelemetry/api@1.10.0': {}
@@ -1921,7 +1913,7 @@ snapshots:
 
   '@scure/bip32@1.7.0':
     dependencies:
-      '@noble/curves': 1.9.7
+      '@noble/curves': 1.9.1
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
 
@@ -2520,7 +2512,7 @@ snapshots:
 
   util-deprecate@1.0.2: {}
 
-  viem@2.58.0(typescript@7.0.2):
+  viem@2.58.8(typescript@7.0.2):
     dependencies:
       '@noble/curves': 1.9.1
       '@noble/hashes': 1.8.0
